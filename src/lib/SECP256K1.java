@@ -29,19 +29,15 @@ public class SECP256K1 {
 
     public Point scalarG(String hexScalar) {
         Point sum = g;
-        Point doubled = g;
 
-        String binary = new BigInteger(hexScalar, 16).subtract(BigInteger.ONE).toString(2);
+        String binary = new BigInteger(hexScalar, 16).toString(2);
         for (int i = 1; i < binary.length(); i++) {
-            if (binary.charAt(binary.length()-i) == '1') {
-                sum = add(sum, doubled);
+            sum = add(sum, sum);
+            if (binary.charAt(i) == '1') {
+                sum = add(sum, g);
             }
-            doubled = add(doubled, doubled);
         }
 
-        /*for (BigDecimal scalar = new BigDecimal(new BigInteger(hexScalar, 16).toString()); scalar.compareTo(BigDecimal.ONE) != 0; scalar = scalar.subtract(BigDecimal.ONE)) {
-            sum = add(sum, g);
-        }*/
         return sum;
     }
 
@@ -49,8 +45,10 @@ public class SECP256K1 {
         a = BigDecimal.ZERO;
         b = new BigDecimal("7");
         g = new Point(
-            new BigDecimal("55066263022277343669578718895168534326250603453777594175500187360389116729240"),
-            new BigDecimal("32670510020758816978083085130507043184471273380659243275938904335757337482424")
+            //new BigDecimal("99.99977"),
+            //new BigDecimal("1000")
+            new BigDecimal(new BigInteger("79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798", 16)),
+            new BigDecimal(new BigInteger("483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8", 16))
         );
         context = new MathContext(256);
     }

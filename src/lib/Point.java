@@ -7,11 +7,13 @@ public class Point {
     public BigDecimal x, y;
 
     public String getX() {
-        return (new BigInteger(x.toString().split("\\.")[0])).toString(16);
+        return x.toString();
+        //return new BigInteger(x.toString().split("\\.")[0]).toString(16);
     }
 
     public String getY() {
-        return (new BigInteger(y.toString().split("\\.")[0])).toString(16);
+        return y.toString();
+        //return new BigInteger(y.toString().split("\\.")[0]).toString(16);
     }
 
     public Point(BigDecimal x, BigDecimal y) {
