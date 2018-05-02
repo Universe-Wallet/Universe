@@ -1,6 +1,6 @@
 var SHA3 = {
     new: function() {
-        var sha3 = new (Java.type("src.lib.SHA3"))();
+        var sha3 = new (Java.type("src.lib.SHA_3"))();
 
         return {
             sha3_256: function(data) {

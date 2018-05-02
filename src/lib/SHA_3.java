@@ -5,11 +5,11 @@ import src.lib.Hex;
 import org.bouncycastle.jcajce.provider.digest.SHA3;
 import org.bouncycastle.jcajce.provider.digest.SHA3.DigestSHA3;
 
-public class SHA3 {
+public class SHA_3 {
     DigestSHA3 sha3_256;
     DigestSHA3 sha3_512;
 
-    public KECCAK() {
+    public SHA_3() {
         sha3_256 = new SHA3.Digest256();
         sha3_512 = new SHA3.Digest512();
     }

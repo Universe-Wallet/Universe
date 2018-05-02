@@ -4,7 +4,7 @@ package src;
 import src.lib.Hex;
 import src.lib.Random;
 import src.lib.SHA;
-import src.lib.SHA3;
+import src.lib.SHA_3;
 import src.lib.RIPEMD;
 import src.lib.Base58;
 import src.lib.Base58Check;
@@ -27,7 +27,8 @@ public class main {
             Coin coin;
             //try {
                 coin = new Coin(coinsToLoad[i]);
-                System.out.println(coin.generate().getMember("address")); //Testing code.
+                //System.out.println(coin.generate().getMember("address")); //Testing code.
+                System.out.println(coin.getUSDPrice());
             //} catch(Exception e) {
             //    System.out.println(coinsToLoad[i] + " failed to load.");
             //    continue;

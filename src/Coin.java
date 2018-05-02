@@ -19,7 +19,28 @@ public class Coin {
 
     public ScriptObjectMirror generate() throws Exception {
         ScriptObjectMirror generated = (ScriptObjectMirror) invocable.invokeFunction("generate");
-        
+
         return generated;
+    }
+
+    public String getBalance() throws Exception {
+        return "";
+    }
+
+    /*public String prepare() throws Exception {
+
+    }*/
+
+    public boolean send() throws Exception {
+        return false;
+    }
+
+    public String getUSDPrice() throws Exception {
+        String price = (String) (Object) invocable.invokeFunction("getUSDPrice");
+        return price.toString();
+    }
+
+    public void shutdown() {
+
     }
 }

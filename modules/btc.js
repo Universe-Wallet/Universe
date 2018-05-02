@@ -3,10 +3,14 @@ load("wrappers/SHA.js");
 load("wrappers/RIPEMD.js");
 load("wrappers/Base58Check.js");
 
+load("wrappers/HTTP.js");
+
 var secp256k1 = SECP256K1.new();
 var sha = SHA.new();
 var ripemd = RIPEMD.new();
 var base58check = Base58Check.new();
+
+var http = HTTP.new();
 
 function generate() {
     var keys = secp256k1.generateKeys();
@@ -37,5 +41,9 @@ function send() {
 }
 
 function getUSDPrice() {
+    return JSON.parse(http.get("https://www.bitstamp.net/api/v2/ticker/btcusd/")).last;
+}
+
+function shutdown() {
 
 }
