@@ -24,7 +24,7 @@ public class Coin {
     }
 
     public String getBalance() throws Exception {
-        return "";
+        return (String) (Object) invocable.invokeFunction("getBalance");
     }
 
     /*public String prepare() throws Exception {
@@ -36,8 +36,7 @@ public class Coin {
     }
 
     public String getUSDPrice() throws Exception {
-        String price = (String) (Object) invocable.invokeFunction("getUSDPrice");
-        return price.toString();
+        return (String) (Object) invocable.invokeFunction("getUSDPrice");
     }
 
     public void shutdown() {

@@ -3,14 +3,28 @@ load("wrappers/SHA.js");
 load("wrappers/RIPEMD.js");
 load("wrappers/Base58Check.js");
 
-load("wrappers/HTTP.js");
+load("wrappers/TCPSocket.js");
 
 var secp256k1 = SECP256K1.new();
 var sha = SHA.new();
 var ripemd = RIPEMD.new();
 var base58check = Base58Check.new();
 
-var http = HTTP.new();
+var seedNodes = {
+    "currentlane.lovebitco.in": 50001
+};
+var nodes = {};
+for (var i in seedNodes) {
+    nodes[i] = TCPSocket.new(i, seedNodes[i]);
+    nodes[i].send(JSON.stringify({"id": 0, "method": "server.version", "params":["0.1"]}));
+    var response = JSON.parse(nodes[i].receive());
+    if (response.error) {
+        print("Error.");
+        delete nodes[i];
+    } else {
+        print("Success.");
+    }
+}
 
 function generate() {
     var keys = secp256k1.generateKeys();

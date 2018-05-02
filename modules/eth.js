@@ -23,7 +23,7 @@ function generate() {
 }
 
 function getBalance() {
-
+    return "";
 }
 
 function prepare() {
