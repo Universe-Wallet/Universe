@@ -28,7 +28,7 @@ function generate() {
     var address = base58check.encode(publicHash, "00");
 
     return {
-        privKey: privkey,
+        privKey: privKey,
         address: address
     };
 }

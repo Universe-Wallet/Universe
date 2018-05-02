@@ -7,22 +7,56 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 
 public class SECP256K1 {
-    private BigDecimal a, b;
+    private BigDecimal a, b, mod;
     private Point g;
     private MathContext context;
+
+    private BigDecimal bdMod(BigDecimal number, BigDecimal modulus) {
+        number = number.divide(modulus, context);
+        number = number.subtract(new BigDecimal(number.toBigInteger().toString()));
+        number = number.multiply(modulus);
+        return number.setScale(10, BigDecimal.ROUND_HALF_UP);
+    }
+
+    private BigDecimal modInverse(BigDecimal number) {
+        BigDecimal m = mod;
+        BigDecimal y = BigDecimal.ZERO, x = BigDecimal.ONE;
+
+        while (number.compareTo(BigDecimal.ONE) == 1) {
+            BigDecimal quotient = number.divide(m, context);
+
+            BigDecimal t = m;
+
+            m = bdMod(number, m);
+            number = t;
+            t = y;
+
+            y = x.subtract(quotient.multiply(y));
+            x = t;
+        }
+
+        return x.abs();
+    }
 
     private Point add(Point p, Point q) {
         BigDecimal slope, x, y;
 
         if (p.equals(q)) {
             slope = p.x.multiply(p.x).multiply(new BigDecimal("3")).add(a);
-            slope = slope.divide(new BigDecimal("2").multiply(p.y), context);
+            //Multiply by the inverse of 2y mod p and then mod p.
+            slope = slope.multiply(modInverse(p.y.multiply(new BigDecimal("2"))), context);
+            slope = bdMod(slope, mod);
+            //slope = slope.multiply(new BigDecimal("2").multiply(p.y), context);
         } else {
             slope = p.y.subtract(q.y).divide(p.x.subtract(q.x), context);
+            slope = bdMod(slope, mod);
         }
 
         x = slope.multiply(slope).subtract(p.x).subtract(q.x);
+        x = bdMod(x, mod);
+
         y = p.y.add(slope.multiply(x.subtract(p.x)));
+        y = bdMod(y, mod);
 
         return new Point(x, BigDecimal.ZERO.subtract(y));
     }
@@ -50,6 +84,7 @@ public class SECP256K1 {
             new BigDecimal(new BigInteger("79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798", 16)),
             new BigDecimal(new BigInteger("483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8", 16))
         );
+        mod = new BigDecimal("115792089237316195423570985008687907853269984665640564039457584007908834671663");
         context = new MathContext(256);
     }
 }

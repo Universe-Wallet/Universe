@@ -4,9 +4,10 @@ load("wrappers/KECCAK.js");
 
 var random = Random.new();
 var secp256k1 = SECP256K1.new();
-var keccak = KECCAK.new();
+//var keccak = KECCAK.new();
 
 function generate() {
+    /*
     var privKey = random.bytes(32, "0", "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141");
 
     //secp256k1 is still in progress.
@@ -20,6 +21,7 @@ function generate() {
         privKey: privKey,
         address: address
     };
+    */
 }
 
 function getBalance() {
