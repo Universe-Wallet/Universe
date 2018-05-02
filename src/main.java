@@ -15,9 +15,6 @@ import src.lib.HTTP;
 //This is actually needed.
 import src.Coin;
 
-import src.lib.Point;
-import java.math.BigInteger;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 
 public class main {

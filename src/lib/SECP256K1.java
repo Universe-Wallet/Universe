@@ -1,90 +1,37 @@
 package src.lib;
 
-import src.lib.Point;
-
 import java.math.BigInteger;
-import java.math.BigDecimal;
-import java.math.MathContext;
+import java.security.SecureRandom;
+
+import org.bouncycastle.asn1.x9.X9ECParameters;
+import org.bouncycastle.asn1.sec.SECNamedCurves;
+import org.bouncycastle.crypto.params.ECDomainParameters;
+
+import org.bouncycastle.crypto.generators.ECKeyPairGenerator;
+import org.bouncycastle.crypto.params.ECKeyGenerationParameters;
+
+import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
+import org.bouncycastle.crypto.params.ECPublicKeyParameters;
+import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
 
 public class SECP256K1 {
-    private BigDecimal a, b, mod;
-    private Point g;
-    private MathContext context;
+    private ECKeyPairGenerator generator;
 
-    private BigDecimal bdMod(BigDecimal number, BigDecimal modulus) {
-        number = number.divide(modulus, context);
-        number = number.subtract(new BigDecimal(number.toBigInteger().toString()));
-        number = number.multiply(modulus);
-        return number.setScale(10, BigDecimal.ROUND_HALF_UP);
-    }
+    public String generateKeys() {
+        AsymmetricCipherKeyPair keys = generator.generateKeyPair();
+        ECPrivateKeyParameters privKey = (ECPrivateKeyParameters) keys.getPrivate();
+        ECPublicKeyParameters pubKey = (ECPublicKeyParameters) keys.getPublic();
+        String hexPrivKey = privKey.getD().toString(16);
+        String pubKeyObj = "{\"x\":\"" + pubKey.getQ().getX().toString() + "\",\"y\":\"" + pubKey.getQ().getY().toString() + "\"}";
 
-    private BigDecimal modInverse(BigDecimal number) {
-        BigDecimal m = mod;
-        BigDecimal y = BigDecimal.ZERO, x = BigDecimal.ONE;
-
-        while (number.compareTo(BigDecimal.ONE) == 1) {
-            BigDecimal quotient = number.divide(m, context);
-
-            BigDecimal t = m;
-
-            m = bdMod(number, m);
-            number = t;
-            t = y;
-
-            y = x.subtract(quotient.multiply(y));
-            x = t;
-        }
-
-        return x.abs();
-    }
-
-    private Point add(Point p, Point q) {
-        BigDecimal slope, x, y;
-
-        if (p.equals(q)) {
-            slope = p.x.multiply(p.x).multiply(new BigDecimal("3")).add(a);
-            //Multiply by the inverse of 2y mod p and then mod p.
-            slope = slope.multiply(modInverse(p.y.multiply(new BigDecimal("2"))), context);
-            slope = bdMod(slope, mod);
-            //slope = slope.multiply(new BigDecimal("2").multiply(p.y), context);
-        } else {
-            slope = p.y.subtract(q.y).divide(p.x.subtract(q.x), context);
-            slope = bdMod(slope, mod);
-        }
-
-        x = slope.multiply(slope).subtract(p.x).subtract(q.x);
-        x = bdMod(x, mod);
-
-        y = p.y.add(slope.multiply(x.subtract(p.x)));
-        y = bdMod(y, mod);
-
-        return new Point(x, BigDecimal.ZERO.subtract(y));
-    }
-
-    public Point scalarG(String hexScalar) {
-        Point sum = g;
-
-        String binary = new BigInteger(hexScalar, 16).toString(2);
-        for (int i = 1; i < binary.length(); i++) {
-            sum = add(sum, sum);
-            if (binary.charAt(i) == '1') {
-                sum = add(sum, g);
-            }
-        }
-
-        return sum;
+        return "{\"privKey\":\"" + hexPrivKey + "\",\"pubKey\":" + pubKeyObj + "}";
     }
 
     public SECP256K1() {
-        a = BigDecimal.ZERO;
-        b = new BigDecimal("7");
-        g = new Point(
-            //new BigDecimal("99.99977"),
-            //new BigDecimal("1000")
-            new BigDecimal(new BigInteger("79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798", 16)),
-            new BigDecimal(new BigInteger("483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8", 16))
-        );
-        mod = new BigDecimal("115792089237316195423570985008687907853269984665640564039457584007908834671663");
-        context = new MathContext(256);
+        X9ECParameters curve = SECNamedCurves.getByName("secp256k1");
+        ECDomainParameters domain = new ECDomainParameters(curve.getCurve(), curve.getG(), curve.getN(), curve.getH());
+
+        generator = new ECKeyPairGenerator();
+        generator.init(new ECKeyGenerationParameters(domain, new SecureRandom()));
     }
 }
