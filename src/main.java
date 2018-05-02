@@ -4,6 +4,7 @@ package src;
 import src.lib.Hex;
 import src.lib.Random;
 import src.lib.SHA;
+import src.lib.SHA3;
 import src.lib.RIPEMD;
 import src.lib.Base58;
 import src.lib.Base58Check;
