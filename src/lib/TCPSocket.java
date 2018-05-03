@@ -1,6 +1,7 @@
 package src.lib;
 
 import java.net.Socket;
+
 import java.io.PrintWriter;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -16,17 +17,13 @@ public class TCPSocket {
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
     }
 
-    public void send(String data) {
+    public void send(String data) throws Exception {
         out.println(data);
     }
 
-    public String receive() {
-        try {
-            String received = in.readLine();
-            return ((received == null) ? "" : received);
-        } catch (Exception e) {
-            return "___UNIVERSE___ ERROR";
-        }
+    public String receive() throws Exception {
+        String received = in.readLine();
+        return ((received == null) ? "" : received);
     }
 
     public boolean close() {

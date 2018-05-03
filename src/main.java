@@ -11,6 +11,7 @@ import src.lib.Base58Check;
 import src.lib.SECP256K1;
 import src.lib.MDX;
 import src.lib.TCPSocket;
+import src.lib.FakeTLSSocket;
 import src.lib.HTTP;
 
 //This is actually needed.

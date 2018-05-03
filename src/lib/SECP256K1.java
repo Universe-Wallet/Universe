@@ -1,8 +1,5 @@
 package src.lib;
 
-import java.math.BigInteger;
-import java.security.SecureRandom;
-
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.asn1.sec.SECNamedCurves;
 import org.bouncycastle.crypto.params.ECDomainParameters;
@@ -13,6 +10,8 @@ import org.bouncycastle.crypto.params.ECKeyGenerationParameters;
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
 import org.bouncycastle.crypto.params.ECPublicKeyParameters;
 import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
+
+import java.security.SecureRandom;
 
 public class SECP256K1 {
     private ECKeyPairGenerator generator;

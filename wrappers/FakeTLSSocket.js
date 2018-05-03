@@ -1,8 +1,8 @@
-var TCPSocket = {
+var FakeTLSSocket = {
     new: function(host, port) {
         var socket;
         try {
-            socket = new (Java.type("src.lib.TCPSocket"))(host, port);
+            socket = new (Java.type("src.lib.FakeTLSSocket"))(host, port);
         } catch(e) {
             print(e);
             return false;

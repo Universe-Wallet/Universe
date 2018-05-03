@@ -4,6 +4,7 @@ import src.lib.Hex;
 import src.lib.Base58;
 
 import java.security.MessageDigest;
+
 import java.util.Arrays;
 
 public class Base58Check {
