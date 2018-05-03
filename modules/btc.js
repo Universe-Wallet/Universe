@@ -3,35 +3,18 @@ load("wrappers/SHA.js");
 load("wrappers/RIPEMD.js");
 load("wrappers/Base58Check.js");
 
-load("wrappers/FakeTLSSocket.js");
+load("wrappers/Electrum.js");
 
 var secp256k1 = SECP256K1.new();
 var sha = SHA.new();
 var ripemd = RIPEMD.new();
 var base58check = Base58Check.new();
 
-var seedNodes = {
+var electrum = Electrum.new({
     "btc.smsys.me": 995,
     "E-X.not.fyi": 50002,
     "btc.cihar.com": 50002
-};
-var nodes = {};
-for (var i in seedNodes) {
-    try {
-        nodes[i] = FakeTLSSocket.new(i, seedNodes[i]);
-        nodes[i].send(JSON.stringify({"id": 0, "method": "server.version", "params":["0.1"]}));
-        var response = JSON.parse(nodes[i].receive());
-        if (response.error) {
-            delete nodes[i];
-        }
-    } catch(e) {
-        delete nodes[i];
-    }
-}\
-if (Object.keys(nodes).length < 8) {
-
-}
-
+});
 
 function generate() {
     var keys = secp256k1.generateKeys();
@@ -50,7 +33,7 @@ function generate() {
 }
 
 function getBalance() {
-
+    electrum.getBalance("1C1mCxRukix1KfegAY5zQQJV7samAciZpv");
 }
 
 function prepare() {
