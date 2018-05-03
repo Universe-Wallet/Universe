@@ -1,60 +1,63 @@
 //Side effects/needed libs.
-load("wrappers/FakeTLSSocket.js");
+load("wrappers/Timeout.js");
 load("wrappers/Interval.js");
+load("wrappers/SocketManager.js");
 
 var Electrum = {
     new: function(seedNodes) {
-        var nodes = [];
+        var nodes = SocketManager.new();
+        var pending = [];
 
         function connectToNode(host, port) {
-            try {
-                if ((host.indexOf(".onion") > -1) || (/^[a-zA-Z]+/.test(host) === false)) {
-                    return false;
-                }
-
-                var socket = FakeTLSSocket.new(host, port);
-                socket.send(JSON.stringify({id: 0, method: "server.version", params: ["0.10"]}));
-                var res = JSON.parse(socket.receive());
-                if (res.error) {
-                    return false;
-                }
-                return socket;
-            } catch(e) {
+            if ((host.indexOf(".onion") > -1) || (/^[a-zA-Z]+/.test(host) === false)) {
                 return false;
             }
+
+            print("Connecting to " + host + ":" + port);
+            var id = nodes.open(host, port, function(socket) {
+                try {
+                    socket.send(JSON.stringify({id: 0, method: "server.version", params: ["0.10"]}));
+                    var res = JSON.parse(socket.receive());
+                    if (res.error) {
+                        return false;
+                    }
+                } catch(e) {
+                    return false;
+                }
+                return true;
+            });
         }
 
         for (var i in seedNodes) {
-            var socket = connectToNode(i, seedNodes[i]);
-            if (socket) {
-                nodes.push(socket);
-            }
+            connectToNode(i, seedNodes[i]);
         }
+        Thread.sleep(6000);
 
-        if (Object.keys(nodes).length === 0) {
-            throw "None of the Electrum Seed Nodes were valid.";
-        }
+        setTimeout(function() {
+            if (nodes.getNodeCount() === 0) {
+                throw "None of the Electrum Seed Nodes were valid.";
+            }
+        }, 6000);
 
         function connect() {
-            while (Object.keys(nodes).length < 8) {
-                var server = nodes[0];
+            print(8 - nodes.getNodeCount());
+            for (var i = 0; i < 8 - nodes.getNodeCount(); i++) {
+                print("In loop.")
                 try {
-                    nodes[0].send(JSON.stringify({id: 0, method: "server.peers.subscribe", params: []}));
-                    var res = JSON.parse(nodes[0].receive()).result;
+                    nodes.send(0, JSON.stringify({id: 0, method: "server.peers.subscribe", params: []}));
+                    var res = JSON.parse(nodes.receive(0)).result;
 
-                    for (var i in res) {
-                        for (var x in res[i][2]) {
-                            if (res[i][2][x].substr(0, 1) !== "s") {
+                    for (var x in res) {
+                        print ("Handling " + JSON.stringify(x));
+                        for (var z in res[x][2]) {
+                            if (res[x][2][z].substr(0, 1) !== "s") {
                                 continue;
                             }
 
-                            var socket = connectToNode(res[i][1], parseInt(res[i][2][x].substr(1, res[i][2][x].length)));
-                            if (socket) {
-                                nodes.push(socket);
-                            }
+                            connectToNode(res[x][1], parseInt(res[x][2][z].substr(1, res[x][2][z].length)));
                         }
 
-                        if (Object.keys(nodes).length > 8) {
+                        if (i > 8-nodes.getNodeCount()) {
                             break;
                         }
                     }
@@ -62,7 +65,7 @@ var Electrum = {
                     //If we went through every node...
                     break;
                 } catch(e) {
-                    delete nodes[0];
+                    nodes.close(0);
                 }
             }
         }
@@ -71,41 +74,52 @@ var Electrum = {
         setInterval(connect, 11*60*1000);
 
         function testNodes() {
-            for (var i in nodes) {
+            for (var i = 0; i < nodes.getNodeCount(); i++) {
                 try {
-                    nodes[i].send(JSON.stringify({id: 0, method: "server.version", params: ["0.10"]}));
-                    var res = JSON.parse(nodes[i].receive());
+                    if (i > 7) {
+                        nodes.close(i);
+                        continue;
+                    }
+
+                    nodes.send(i, JSON.stringify({id: 0, method: "server.version", params: ["0.10"]}));
+                    var res = JSON.parse(nodes.receive(i));
                     if (res.error) {
-                        delete nodes[i];
+                        nodes.close(i);
                     }
                 } catch(e) {
-                    delete nodes[i];
+                    nodes.close(i);
                 }
             }
         }
-        //Make sure we disconnect from dead nodes every 5 minutes.
-        setInterval(testNodes, 5*60*1000);
+        //Make sure we send a keep-alive message/test nodes every minute...
+        setInterval(testNodes, 60*1000);
+
+        Thread.sleep(6000);
 
         function testConclusiveness(ress) {
-            var keys = Object.keys(ress);
+            var keys = Object.keys(ress[0]);
+
             var counts = {};
             for (var i in ress) {
-                var count = "";
-                for (var k in keys) {
-                    count += ress[i][keys[k]];
-                }
+                try {
+                    var count = "";
+                    for (var k in keys) {
+                        count += ress[i][keys[k]];
+                    }
 
-                if (typeof(counts[count]) !== "object") {
-                    counts[count] = {
-                        count: 0,
-                        example: ress[i]
-                    };
-                }
-                counts[count].count++;
+                    if (typeof(counts[count]) !== "object") {
+                        counts[count] = {
+                            count: 0,
+                            example: ress[i]
+                        };
+                    }
+                    counts[count].count++;
 
-                if (counts[count].count === 5) {
-                    return counts[count].example;
-                }
+                    if (counts[count].count === 5) {
+                        print("Conclusive: " + JSON.stringify(counts[count].example));
+                        return counts[count].example;
+                    }
+                }catch(e){}
             }
 
             return false;
@@ -113,22 +127,28 @@ var Electrum = {
 
         function query(method, params) {
             var ress = [];
-            for (var i in nodes) {
+            for (var i = 0; i < nodes.getNodeCount(); i++) {
                 try {
-                    nodes[i].send(JSON.stringify({
+                    nodes.send(i, JSON.stringify({
                         id: 0,
                         method: method,
                         params: ((typeof(params) === "object") ? params : [params])
                     }));
-                    var res = JSON.parse(nodes[i].receive()).result;
+                    var res = nodes.receive(i);
+                    if (res === false) {
+                        nodes.close(i);
+                    }
+                    res = JSON.parse(res);
                     if (res.error) {
                         continue;
                     }
-                    ress.push(res);
+                    ress.push(res.result);
                 } catch(e) {
-                    delete nodes[i];
+                    nodes.close(i)
                 }
             }
+            print("Ress");
+            print(JSON.stringify(ress, null, 4));
             return ress;
         }
 
@@ -138,7 +158,10 @@ var Electrum = {
 
         return {
             getBalance: function(address) {
+                print("Getting balance.");
                 var res = queryConclusive("blockchain.address.get_balance", address);
+                print("Res");
+                print(JSON.stringify(res));
                 if (res === false) {
                     return false;
                 }
@@ -151,8 +174,8 @@ var Electrum = {
             },
 
             shutdown: function() {
-                for (var i in nodes) {
-                    nodes[i].close();
+                for (var i = 0; i < nodes.getNodeCount(); i++) {
+                    nodes.close(i);
                 }
             }
         }

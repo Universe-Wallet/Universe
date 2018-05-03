@@ -9,6 +9,7 @@ import java.security.SecureRandom;
 
 import javax.net.ssl.SSLSocketFactory;
 import java.net.Socket;
+import java.net.InetSocketAddress;
 
 import java.io.PrintWriter;
 import java.io.BufferedReader;
@@ -39,7 +40,8 @@ public class FakeTLSSocket {
         SSLContext sslContext = SSLContext.getInstance("SSL");
         sslContext.init(null, trustAllCerts, new SecureRandom());
 
-        socket = ((SSLSocketFactory) sslContext.getSocketFactory()).createSocket(host, port);
+        socket = ((SSLSocketFactory) sslContext.getSocketFactory()).createSocket();
+        socket.connect(new InetSocketAddress(host, port), 5000);
         out = new PrintWriter(socket.getOutputStream(), true);
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
     }

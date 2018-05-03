@@ -1,3 +1,5 @@
+print("Loaded btc");
+
 load("wrappers/secp256k1.js");
 load("wrappers/SHA.js");
 load("wrappers/RIPEMD.js");
@@ -15,6 +17,8 @@ var electrum = Electrum.new({
     "E-X.not.fyi": 50002,
     "btc.cihar.com": 50002
 });
+
+print("conected to Electrum");
 
 function generate() {
     var keys = secp256k1.generateKeys();
