@@ -33,7 +33,7 @@ function generate() {
 }
 
 function getBalance() {
-    electrum.getBalance("1C1mCxRukix1KfegAY5zQQJV7samAciZpv");
+    print(electrum.getBalance("1C1mCxRukix1KfegAY5zQQJV7samAciZpv"));
 }
 
 function prepare() {
@@ -49,5 +49,5 @@ function getUSDPrice() {
 }
 
 function shutdown() {
-
+    electrum.shutdown();
 }
