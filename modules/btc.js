@@ -13,7 +13,7 @@ var base58check = Base58Check.new();
 var seedNodes = {
     "btc.smsys.me": 995,
     "E-X.not.fyi": 50002,
-    "104.250.141.242": 50002
+    "btc.cihar.com": 50002
 };
 var nodes = {};
 for (var i in seedNodes) {
@@ -27,9 +27,9 @@ for (var i in seedNodes) {
     } catch(e) {
         delete nodes[i];
     }
-}
-if (nodes.length < 8) {
-    
+}\
+if (Object.keys(nodes).length < 8) {
+
 }
 
 
