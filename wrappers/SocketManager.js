@@ -1,32 +1,57 @@
 //Side effect.
 load("wrappers/FakeTLSSocket.js");
+load("wrappers/EventEmitter.js");
 load("wrappers/Thread.js");
 
 var SocketManager = {
     new: function() {
-        var promised = [];
+        var emitter = EventEmitter.new();
+
+        var maxSockets;
         var nodes = [];
+        var promised = 0;
 
         return {
-            open: function(host, port, test) {
-                Thread.new(function() {
-                    Thread.sleep(100);
-                    var id = promised.length;
-                    promised.push(false);
-                    try {
-                        promised[id] = FakeTLSSocket.new(host, port);
-                        if (!(test(promised[id]))) {
-                            promised[id] = false;
-                        }
-                        nodes.push(promised[id]);
-                        promised[id] = false;
-                    } catch(e) {
-                        promised[id] = false;
+            emitter: {
+                on: function(event, func) {
+                    emitter.on(event, func);
+                }
+            },
+
+            setMaxSockets: function(max) {
+                maxSockets = max;
+            },
+
+            getRealSocketCount: function() {
+                return nodes.length;
+            },
+
+            getSocketCount: function() {
+                return nodes.length + promised;
+            },
+
+            open: function(targets, test) {
+                for (var i in targets) {
+                    if (maxSockets <= this.getSocketCount()) {
+                        return;
                     }
-                });
-                var id = promised.length;
-                Thread.sleep(200);
-                return id;
+
+                    Thread.new(function() {
+                        try {
+                            promised++;
+                            var socket = FakeTLSSocket.new(targets[i].host, targets[i].port);
+                            if (!(socket)) {
+                                promised--;
+                                return;
+                            }
+                            nodes.push(socket);
+
+                            emitter.emit("connect", nodes.length);
+                        } catch(e) {
+                            promised--;
+                        }
+                    });
+                }
             },
 
             send: function(id, data) {
@@ -42,8 +67,7 @@ var SocketManager = {
                     return false;
                 }
 
-                var received = nodes[id].receive();
-                return received;
+                return nodes[id].receive();
             },
 
             close: function(id) {
@@ -53,10 +77,6 @@ var SocketManager = {
                 var res = nodes[id].close();
                 delete nodes[id];
                 return res;
-            },
-
-            getNodeCount: function() {
-                return nodes.length;
             }
         };
     }
