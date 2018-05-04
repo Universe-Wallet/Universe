@@ -1,4 +1,4 @@
-//Side effect.
+//Side effects/needed libs.
 load("wrappers/FakeTLSSocket.js");
 load("wrappers/EventEmitter.js");
 load("wrappers/Thread.js");
