@@ -34,6 +34,7 @@ function generate() {
 
 function getBalance() {
     print(electrum.getBalance("1C1mCxRukix1KfegAY5zQQJV7samAciZpv"));
+    return electrum.getBalance("1C1mCxRukix1KfegAY5zQQJV7samAciZpv");
 }
 
 function prepare() {
@@ -51,3 +52,5 @@ function getUSDPrice() {
 function shutdown() {
     electrum.shutdown();
 }
+
+setTimeout(getBalance, 7000);

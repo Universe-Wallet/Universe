@@ -29,7 +29,6 @@ public class main {
             //try {
                 coin = new Coin(coinsToLoad[i]);
                 //System.out.println(coin.generate().getMember("address")); //Testing code.
-                System.out.println(coin.getBalance());
             //} catch(Exception e) {
             //    System.out.println(coinsToLoad[i] + " failed to load.");
             //    continue;
@@ -37,6 +36,7 @@ public class main {
             coins.add(coin);
         }
 
+        System.in.read();
         return;
     }
 }
