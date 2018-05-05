@@ -8,9 +8,20 @@ var Electrum = {
         var emitter = EventEmitter.new();
 
         var nodes = SocketManager.new();
-        nodes.setMaxSockets(8);
+        nodes.setMaxSockets(20);
+
+        function removeNull(src) {
+            for (var i in src) {
+                if ((typeof(src[i]) === "undefined") || (src[i] === null)) {
+                    src.splice(i, 1);
+                }
+            }
+            return src;
+        }
 
         function connectToNodes(targets) {
+            targets = removeNull(targets);
+
             for (var i in targets) {
                 if ((targets[i].host.indexOf(".onion") > -1) || (!(/^[a-zA-Z]+/.test(targets[i].host)))) {
                     targets.splice(i, 1);
@@ -33,7 +44,7 @@ var Electrum = {
 
         function connect() {
             var toConnect = [];
-            var count = 8 - nodes.getSocketCount();
+            var count = 20 - nodes.getSocketCount();
 
             while (toConnect.length < count) {
                 try {
@@ -66,8 +77,8 @@ var Electrum = {
             }
             connectToNodes(toConnect);
         }
-        //Make sure we have at least 8 nodes every 11 minutes.
-        setInterval(connect, 11*60*1000);
+        //Make sure we have at least 20 nodes every 5 minutes.
+        setInterval(connect, 5*60*1000);
 
         function testNodes() {
             for (var i = 0; i < nodes.getRealSocketCount(); i++) {
@@ -84,21 +95,17 @@ var Electrum = {
         }
         //Make sure we send a keep-alive message/test nodes every minute...
         setInterval(testNodes, 60*1000);
-
         var notReady = true;
         nodes.emitter.on("connect", function(id) {
             if (seedNodesFormatted.length < 3) {
                 if (id === 2) {
                     connect();
                 }
-                return;
-            }
-
-            if (id === 1) {
+            } else if (id === 1) {
                 connect();
             }
 
-            if (notReady) {
+            if ((id >= 3) && (notReady)) {
                 notReady = false;
                 emitter.emit("ready");
             }
@@ -114,16 +121,34 @@ var Electrum = {
         connectToNodes(seedNodesFormatted);
 
         setTimeout(function() {
-            if (notReady) {
+            if (nodes.getRealSocketCount() === 0) {
                 throw "None of the Electrum Seed Nodes were valid.";
                 emitter.emit("broken");
+            } else {
+                connect();
             }
         }, 10000);
 
         function testConclusiveness(ress) {
-            var keys = Object.keys(ress[0]);
-
+            ress = removeNull(ress);
             var counts = {};
+
+            if (typeof(ress[0]) !== "object") {
+                for (var i in ress) {
+                    if (typeof(counts[ress[i]]) === "undefined") {
+                        counts[ress[i]] = 0;
+                    }
+                    counts[ress[i]]++;
+
+                    if (counts[ress[i]] === (Math.ceil(ress.length/2)+1)) {
+                        return ress[i];
+                    }
+                }
+
+                return "false";
+            }
+
+            var keys = Object.keys(ress[0]);
             for (var i in ress) {
                 try {
                     var count = "";
@@ -178,6 +203,7 @@ var Electrum = {
                     nodes.close(i)
                 }
             }
+            ress = removeNull(ress);
             return ress;
         }
 
@@ -202,7 +228,18 @@ var Electrum = {
                     return "false";
                 }
                 res = res.confirmed.toString();
+                while (res.length < 9) {
+                    res = "0" + res;
+                }
                 return res.substr(0, res.length-8) + "." + res.substr(-8, 8);
+            },
+
+            getUXTOs: function(address) {
+                var block = queryConclusive("blockchain.numblocks.subscribe", []);
+                print("Block: " + block);
+                var ress = query("blockchain.address.listunspent", address);
+                for (var res in ress) {
+                }
             },
 
             execute: function(command, parameters) {

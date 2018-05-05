@@ -16,11 +16,15 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
 public class FakeTLSSocket {
-    Socket socket;
-    PrintWriter out;
-    BufferedReader in;
+    private Socket socket;
+    private PrintWriter out;
+    private BufferedReader in;
+
+    private String host;
 
     public FakeTLSSocket(String host, int port) throws Exception {
+        this.host = host;
+
         TrustManager[] trustAllCerts = new TrustManager[] {
             new X509TrustManager() {
                 public X509Certificate[] getAcceptedIssuers() {
@@ -44,6 +48,10 @@ public class FakeTLSSocket {
         socket.connect(new InetSocketAddress(host, port), 5000);
         out = new PrintWriter(socket.getOutputStream(), true);
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+    }
+
+    public String getHost() {
+        return host;
     }
 
     public void send(String data) {

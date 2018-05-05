@@ -8,8 +8,10 @@ var SocketManager = {
         var emitter = EventEmitter.new();
 
         var maxSockets;
+
         var nodes = [];
         var promised = 0;
+        var connectedTo = [];
 
         return {
             emitter: {
@@ -32,15 +34,20 @@ var SocketManager = {
 
             open: function(targets, test) {
                 for (var i in targets) {
-                    if (maxSockets <= this.getSocketCount()) {
+                    if ((maxSockets <= this.getSocketCount()) || (connectedTo.indexOf(targets[i].host) > -1)) {
                         return;
                     }
 
+                    connectedTo.push(targets[i].host);
+
                     Thread.new(function() {
+                        var host = targets[i].host;
+                        var port = targets[i].port;
                         try {
                             promised++;
-                            var socket = FakeTLSSocket.new(targets[i].host, targets[i].port);
+                            var socket = FakeTLSSocket.new(host, port);
                             if (!(socket)) {
+                                connectedTo.splice(connectedTo.indexOf(host), 1);
                                 promised--;
                                 return;
                             }
@@ -74,7 +81,9 @@ var SocketManager = {
                 if (!(nodes[id])) {
                     return false;
                 }
+
                 var res = nodes[id].close();
+                connectedTo.splice(connectedTo.indexOf(nodes[id].getHost()), 1);
                 delete nodes[id];
                 return res;
             }

@@ -9,6 +9,10 @@ var FakeTLSSocket = {
         }
 
         return {
+            getHost: function() {
+                return socket.getHost();
+            },
+
             send: function(data) {
                 socket.send(data);
             },
