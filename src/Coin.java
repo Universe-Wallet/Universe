@@ -1,5 +1,9 @@
 package src;
 
+import java.util.concurrent.Callable;
+import java.lang.Thread;
+import java.lang.Runnable;
+
 import java.io.FileReader;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptEngine;
@@ -7,14 +11,49 @@ import javax.script.Invocable;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 
 public class Coin {
+    private boolean ready;
+    private boolean broken;
     private ScriptEngine engine;
     private Invocable invocable;
+    public int getReady() {
+        if (broken) {
+            return -1;
+        } else if (ready) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
 
-    public Coin(String moduleName) throws Exception {
-        engine = new ScriptEngineManager().getEngineByName("nashorn");
-        invocable = (Invocable) engine;
+    public Coin(String moduleName) {
+        ready = false;
 
-        engine.eval(new FileReader("./modules/" + moduleName + ".js"));
+        Callable<Void> onReady = new Callable<Void>() {
+           public Void call() {
+                ready = true;
+                return null;
+           }
+       };
+
+        Callable<Void> onBroken = new Callable<Void>() {
+           public Void call() {
+                broken = true;
+                return null;
+           }
+       };
+
+        (new Thread(new Runnable(){
+            public void run() {
+                try {
+                    engine = new ScriptEngineManager().getEngineByName("nashorn");
+                    invocable = (Invocable) engine;
+
+                    engine.eval(new FileReader("./modules/" + moduleName + ".js"));
+
+                    invocable.invokeFunction("start", onReady, onBroken);
+                }catch(Exception e){}
+            }
+        })).start();
     }
 
     public ScriptObjectMirror generate() throws Exception {

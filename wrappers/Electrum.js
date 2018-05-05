@@ -97,7 +97,7 @@ var Electrum = {
             if (id === 1) {
                 connect();
             }
-            
+
             if (notReady) {
                 notReady = false;
                 emitter.emit("ready");
@@ -116,6 +116,7 @@ var Electrum = {
         setTimeout(function() {
             if (notReady) {
                 throw "None of the Electrum Seed Nodes were valid.";
+                emitter.emit("broken");
             }
         }, 10000);
 

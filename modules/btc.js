@@ -10,12 +10,22 @@ var sha = SHA.new();
 var ripemd = RIPEMD.new();
 var base58check = Base58Check.new();
 
-var electrum = Electrum.new({
-    "btc.smsys.me": 995,
-    "E-X.not.fyi": 50002,
-    "btc.cihar.com": 50002
-});
-electrum.emitter.on("ready", getBalance);
+var electrum;
+function start(onReady, onBroken) {
+    electrum = Electrum.new({
+        "btc.smsys.me": 995,
+        "E-X.not.fyi": 50002,
+        "btc.cihar.com": 50002
+    });
+
+    electrum.emitter.on("ready", function() {
+        //Java had a problem with passing .call. I assume it's because .call uses this and that breaks the scope?
+        onReady.call();
+    });
+    electrum.emitter.on("broken", function() {
+        onBroken.call();
+    });
+}
 
 function generate() {
     var keys = secp256k1.generateKeys();
