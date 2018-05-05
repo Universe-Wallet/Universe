@@ -15,11 +15,15 @@ function start(onReady, onBroken) {
     electrum = Electrum.new({
         "btc.smsys.me": 995,
         "E-X.not.fyi": 50002,
-        "btc.cihar.com": 50002
+        "btc.cihar.com": 50002,
+        "crypto.subshell.com": 50002,
+        "e.keff.org": 50002
     });
 
     electrum.emitter.on("ready", function() {
-        //Java had a problem with passing .call. I assume it's because .call uses this and that breaks the scope?
+        print("Ready.");
+        print(getBalance("3AFgJ33v1G7D7tUvbWWstpDWHu3WN7aNSP"));
+        //Java had a problem with passing .call. I assume it's because .call uses `this` and that breaks the scope?
         onReady.call();
     });
     electrum.emitter.on("broken", function() {
@@ -43,17 +47,18 @@ function generate() {
     };
 }
 
-function getBalance() {
-    print(electrum.getBalance("1C1mCxRukix1KfegAY5zQQJV7samAciZpv"));
-    return electrum.getBalance("1C1mCxRukix1KfegAY5zQQJV7samAciZpv");
+function getBalance(address) {
+    return electrum.getBalance(address);
 }
 
+var tx;
 function prepare() {
-
+    tx = {};
+    electrum.getUXTOs();
 }
 
 function send() {
-
+    //send(tx);
 }
 
 function getUSDPrice() {
