@@ -15,6 +15,7 @@ var electrum = Electrum.new({
     "E-X.not.fyi": 50002,
     "btc.cihar.com": 50002
 });
+electrum.emitter.on("ready", getBalance);
 
 function generate() {
     var keys = secp256k1.generateKeys();
@@ -52,5 +53,3 @@ function getUSDPrice() {
 function shutdown() {
     electrum.shutdown();
 }
-
-setTimeout(getBalance, 7000);

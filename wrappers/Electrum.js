@@ -5,6 +5,8 @@ load("wrappers/SocketManager.js");
 
 var Electrum = {
     new: function(seedNodes) {
+        var emitter = EventEmitter.new();
+
         var nodes = SocketManager.new();
         nodes.setMaxSockets(8);
 
@@ -95,8 +97,11 @@ var Electrum = {
             if (id === 1) {
                 connect();
             }
-
-            notReady = false;
+            
+            if (notReady) {
+                notReady = false;
+                emitter.emit("ready");
+            }
         });
 
         var seedNodesFormatted = [];
@@ -184,6 +189,12 @@ var Electrum = {
         }
 
         return {
+            emitter: {
+                on: function(event, func) {
+                    emitter.on(event, func);
+                }
+            },
+
             getBalance: function(address) {
                 var res = queryConclusive("blockchain.address.get_balance", address);
                 if (!(res)) {
@@ -194,7 +205,7 @@ var Electrum = {
             },
 
             execute: function(command, parameters) {
-
+                return query(command, parameters);
             },
 
             shutdown: function() {
