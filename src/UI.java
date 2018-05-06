@@ -18,5 +18,4 @@ public class UI {
         frame.pack();
         frame.setVisible(true);
     }
-
 }
