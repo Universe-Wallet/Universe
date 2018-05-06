@@ -17,6 +17,9 @@ import src.lib.HTTP;
 //This is actually needed.
 import src.Coin;
 
+import src.UI;
+import java.awt.event.*;
+
 import java.util.ArrayList;
 
 public class main {
@@ -36,7 +39,13 @@ public class main {
             coins.add(coin);
         }
 
-        System.in.read();
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                UI ui = new UI();
+                ui.createAndShowFrame();
+            }
+        });
+
         return;
     }
 }
