@@ -16,11 +16,11 @@ import src.lib.HTTP;
 
 //This is actually needed.
 import src.Coin;
+import java.util.ArrayList;
 
 import src.UI;
-import java.awt.event.*;
-
-import java.util.ArrayList;
+import java.lang.Thread;
+import java.lang.Runnable;
 
 public class main {
     public static void main(String[] args) throws Exception { //throws Exception adds extra logging.
@@ -39,13 +39,12 @@ public class main {
             coins.add(coin);
         }
 
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+
+        (new Thread(new Runnable(){
             public void run() {
                 UI ui = new UI();
-                ui.createAndShowFrame();
             }
-        });
-
+        })).start();
         return;
     }
 }
