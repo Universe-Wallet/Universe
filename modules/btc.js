@@ -25,7 +25,6 @@ function start(onReady, onBroken) {
     });
 
     electrum.emitter.on("ready", function() {
-        prepare();
         //print(getBalance("3AFgJ33v1G7D7tUvbWWstpDWHu3WN7aNSP"));
         //Java had a problem with passing .call. I assume it's because .call uses `this` and that breaks the scope?
         onReady.call();
