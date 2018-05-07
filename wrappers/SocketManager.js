@@ -2,6 +2,7 @@
 load("wrappers/FakeTLSSocket.js");
 load("wrappers/EventEmitter.js");
 load("wrappers/Thread.js");
+load("wrappers/LogWindow.js");
 
 var SocketManager = {
     new: function() {
@@ -11,7 +12,53 @@ var SocketManager = {
 
         var nodes = [];
         var promised = 0;
-        var connectedTo = [];
+
+        var hosts = [] , hostsLock = false;
+        function updateHosts() {
+            while(hostsLock) {
+                Thread.sleep(10);
+            }
+            hostsLock = true;
+
+            hosts = [];
+            for (var i in nodes) {
+                try {
+                    var host = nodes[i].getHost();
+                    if (hosts.indexOf(host) > -1) {
+                        throw host + " is already connected to.";
+                    }
+                    print("Added " + host);
+                    hosts.push(host);
+                } catch(e) {
+                    print(e);
+                    nodes[i].close();
+                    delete nodes[i];
+                }
+            }
+
+            hostsLock = false;
+        }
+
+        var log = LogWindow.new("Sockets");
+        setInterval(function() {
+            while (hostsLock) {
+                Thread.sleep(10);
+            }
+
+            var info = "Nodes: " + nodes.length;
+            for (var i in nodes) {
+                info += "<br>";
+                try {
+                    info += nodes[i].getHost();
+                } catch(e) {
+                    info += "Node " + i + " had an error.";
+                }
+            }
+            info += "<br><br>";
+            info += "Hosts:<br>";
+            info += hosts.join("<br>");
+            log.update(info);
+        }, 30*1000);
 
         return {
             emitter: {
@@ -34,11 +81,13 @@ var SocketManager = {
 
             open: function(targets, test) {
                 for (var i in targets) {
-                    if ((maxSockets <= this.getSocketCount()) || (connectedTo.indexOf(targets[i].host) > -1)) {
-                        return;
+                    while (hostsLock) {
+                        Thread.sleep(10);
                     }
 
-                    connectedTo.push(targets[i].host);
+                    if ((maxSockets <= this.getSocketCount()) || (hosts.indexOf(targets[i].host) > -1)) {
+                        return;
+                    }
 
                     Thread.new(function() {
                         var host = targets[i].host;
@@ -47,11 +96,12 @@ var SocketManager = {
                             promised++;
                             var socket = FakeTLSSocket.new(host, port);
                             if (!(socket)) {
-                                connectedTo.splice(connectedTo.indexOf(host), 1);
                                 promised--;
                                 return;
                             }
                             nodes.push(socket);
+
+                            updateHosts();
 
                             emitter.emit("connect", nodes.length);
                         } catch(e) {
@@ -83,8 +133,10 @@ var SocketManager = {
                 }
 
                 var res = nodes[id].close();
-                connectedTo.splice(connectedTo.indexOf(nodes[id].getHost()), 1);
                 delete nodes[id];
+
+                updateHosts();
+
                 return res;
             }
         };
