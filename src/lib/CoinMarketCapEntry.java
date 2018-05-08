@@ -2,7 +2,9 @@ package src.lib;
 
 import src.lib.HTTP;
 
-public class CoinMarketCap {
+public class CoinMarketCapEntry {
+    private String symbol, price, percent, arrow;
+
     public static boolean isGreen(String data) {
         return (data.substring(0, 1) == "▲");
     }
@@ -28,5 +30,13 @@ public class CoinMarketCap {
         } catch(Exception e) {
             return "";
         }
+    }
+
+    public CoinMarketCapEntry(int id) {
+
+    }
+
+    public CoinMarketCapEntry(String ticker) {
+
     }
 }
