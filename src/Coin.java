@@ -11,19 +11,9 @@ import javax.script.Invocable;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 
 public class Coin {
-    private boolean ready;
-    private boolean broken;
+    private boolean ready, broken;
     private ScriptEngine engine;
     private Invocable invocable;
-    public int getReady() {
-        if (broken) {
-            return -1;
-        } else if (ready) {
-            return 1;
-        } else {
-            return 0;
-        }
-    }
 
     public Coin(String moduleName) {
         ready = false;
@@ -57,18 +47,16 @@ public class Coin {
     }
 
     public ScriptObjectMirror generate() throws Exception {
-        ScriptObjectMirror generated = (ScriptObjectMirror) invocable.invokeFunction("generate");
-
-        return generated;
+        return (ScriptObjectMirror) invocable.invokeFunction("generate");
     }
 
     public String getBalance() throws Exception {
         return (String) (Object) invocable.invokeFunction("getBalance");
     }
 
-    /*public String prepare() throws Exception {
-
-    }*/
+    public String prepare() throws Exception {
+        return "";
+    }
 
     public boolean send() throws Exception {
         return false;
@@ -80,5 +68,15 @@ public class Coin {
 
     public void shutdown() {
 
+    }
+
+    public int getReady() {
+        if (broken) {
+            return -1;
+        } else if (ready) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
 }

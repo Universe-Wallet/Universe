@@ -29,5 +29,4 @@ public class Base58Check {
         String base58 = Base58.convert(hexVersion + hexPayload + Hex.byteArrToHex(checksum));
         return "1" + base58;
     }
-
 }
