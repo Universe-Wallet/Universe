@@ -13,6 +13,7 @@ import src.lib.MDX;
 import src.lib.TCPSocket;
 import src.lib.FakeTLSSocket;
 import src.lib.HTTP;
+import src.lib.CoinMarketCapEntry;
 import src.lib.LogWindow;
 
 //This is actually needed.
