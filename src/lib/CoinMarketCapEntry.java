@@ -7,8 +7,9 @@ public class CoinMarketCapEntry {
     public static String downArrow = "▼";
 
     private int rank = -1;
-    private String symbol, price, percent, arrow;
-    private boolean up;
+    private String symbol;
+    public String price, percent, arrow;
+    public boolean up;
 
     public CoinMarketCapEntry(int rank) throws Exception {
         this.rank = rank;
