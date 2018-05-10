@@ -186,7 +186,7 @@ var Electrum = {
                     nodes.send(i, JSON.stringify({
                         id: 0,
                         method: method,
-                        params: ((typeof(params) === "object") ? params : [params])
+                        params: ((typeof(params) === "object") ? params : ((typeof(params) === "undefined") ? [] : [params]))
                     }));
 
                     var res = nodes.receive(i);
@@ -224,10 +224,11 @@ var Electrum = {
 
             getBalance: function(address) {
                 var res = queryConclusive("blockchain.address.get_balance", address);
-                if (!(res)) {
+                if ((res === false) || (typeof(res) === "undefined")) {
                     return "false";
                 }
                 res = res.confirmed.toString();
+
                 while (res.length < 9) {
                     res = "0" + res;
                 }
@@ -235,11 +236,24 @@ var Electrum = {
             },
 
             getUXTOs: function(address) {
-                var block = queryConclusive("blockchain.numblocks.subscribe", []);
-                print("Block: " + block);
                 var ress = query("blockchain.address.listunspent", address);
+                var txs = [];
+
                 for (var res in ress) {
+                    for (var tx in res) {
+                        if (queryConclusive("blockchain.transaction.get", tx.tx_hash) === false) {
+                            continue;
+                        }
+
+                        txs.push({
+                            hash: tx.tx_hash,
+                            index: tx.tx_pos,
+                            amount: tx.value
+                        });
+                    }
                 }
+
+                return txs;
             },
 
             execute: function(command, parameters) {
