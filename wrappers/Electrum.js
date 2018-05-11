@@ -3,6 +3,8 @@ load("wrappers/Timeout.js");
 load("wrappers/Interval.js");
 load("wrappers/SocketManager.js");
 
+load("wrappers/BigDecimal.js");
+
 var Electrum = {
     new: function(seedNodes) {
         var emitter = EventEmitter.new();
@@ -248,7 +250,7 @@ var Electrum = {
                         txs.push({
                             hash: tx.tx_hash,
                             index: tx.tx_pos,
-                            amount: tx.value
+                            amount: BigDecimal.new(tx.value.toString() + ".0").divide("100000000");
                         });
                     }
                 }
