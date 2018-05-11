@@ -2,7 +2,6 @@ load("wrappers/secp256k1.js");
 load("wrappers/SHA.js");
 load("wrappers/RIPEMD.js");
 load("wrappers/Base58Check.js");
-load("wrappers/BigDecimal.js");
 
 load("wrappers/Electrum.js");
 
@@ -80,13 +79,61 @@ function getBalance() {
 }
 
 var tx;
-function prepare() {
-    tx = {};
+//Hex.toHex, Base58.decode, get minimum amount of UXTOs, r, s, change output.
+function prepare(destination, amount, fee) {
     var uxtos = [];
     for (var i in data.addresses) {
         uxtos = uxtos.concat(electrum.getUXTOs(i.split("|")[0]));
         uxtos = uxtos.concat(electrum.getUXTOs(i.split("|")[1]));
     }
+
+    //Get minimum amount of UXTOs needed.
+    var UXTOAmount = BigDecimal.new("0.0");
+
+    var version = Hex.littleEndian(Hex.pad("1", 8));
+    tx = version + Hex.toHex(uxtos.length);
+
+    var r, s, signature, pubKey, script, sequence;
+    for (var i in uxtos) {
+        UXTOAmount = UXTOAmount.add(uxtos[i].amount);
+        tx += Hex.littleEndian(uxtos[i].hash) + Hex.littleEndian(Hex.pad(uxtos[i].index, 8));
+
+        r = "";
+        s = "";
+        signature = "02" + Hex.toHex(r.length/2) + r + Hex.toHex(s.length/2) + s;
+        signature = "30" + Hex.toHex(signature.length/2) + signature + "01";
+
+        pubKey = Base58Check.decode(uxtos[i].address);
+
+        script = (signature.length/2) + signature + "01" + Hex.toHex(pubKey.length/2) + pubKey;
+
+        sequence = "ffffffff";
+
+        tx += Hex.toHex(script.length/2) + script + sequence;
+    }
+
+    var outputs = [{
+        destination: destination,
+        amount: amoount
+    }];
+
+    //Add change output.
+
+    for (var i in outputs) {
+        amount = outputs[i].amount.multiply(100000000).toString();
+        if (value.indexOf(".") > -1) {
+            value = value.split(".")[0];
+        }
+        value = Hex.littleEndian(Hex.pad(Hex.toHex(value), 16));
+
+        script = Base58Check.decode(outputs[i]);
+        script = "76a9" + Hex.toHex(script.length) + script + "88ac";
+
+        tx += value + script;
+    }
+
+    var locktime = Hex.pad("", 8);
+    tx +== locktime;
 }
 
 function send() {
