@@ -1,4 +1,11 @@
 var Hex = {
+    pad: function(data, padLength) {
+        while(data.length < padLength) {
+            data = "0" + data;
+        }
+        return data;
+    },
+
     littleEndian: function(hexStr) {
         var res = "";
         for (var i = hexStr.length-2; i >= 0; i = i - 2) {
