@@ -248,6 +248,7 @@ var Electrum = {
                         }
 
                         txs.push({
+                            address: address,
                             hash: tx.tx_hash,
                             index: tx.tx_pos,
                             amount: BigDecimal.new(tx.value.toString() + ".0").divide("100000000");
