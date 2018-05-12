@@ -101,17 +101,20 @@ public class Base58 {
                 return "";
             }
         }
+
         int digits = valueLength;
         BigInteger digitValue;
         BigInteger digitMultiple;
         BigInteger total = new BigInteger("0");
-
+        System.out.println("------------");
         for (i = 0; i < valueLength; i++) {
             digits--;
             digitValue = new BigInteger(Integer.toString(Characters.indexOf(value.substring(i, i+1))));
-            digitMultiple = new BigInteger(Integer.toString((int) Math.pow(58, digits)));
+            digitMultiple = new BigInteger(base58.pow(digits).toString());
             total = total.add(digitValue.multiply(digitMultiple));
+            System.out.println(digits + " " + digitValue.multiply(digitMultiple).toString());
         }
+        System.out.println("------------");
 
         return total.toString(16);
     }
