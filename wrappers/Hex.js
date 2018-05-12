@@ -13,5 +13,9 @@ var Hex = {
             res += hexStr.substr(i+1, 1);
         }
         return res;
+    },
+
+    toHex: function(decimalStr) {
+        return Java.type("src.lib.Hex").toHex(decimalStr);
     }
 }

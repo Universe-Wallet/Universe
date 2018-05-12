@@ -10,6 +10,10 @@ var SECP256K1 = {
 
             privateToPublic: function(privKey) {
                 return JSON.parse(secp256k1.privateToPublic(privKey));
+            },
+
+            sign: function(privKey, data) {
+                return secp256k1.sign(privKey, data));
             }
         };
     }

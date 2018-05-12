@@ -78,7 +78,7 @@ function getBalance() {
 }
 
 var tx;
-//Hex.toHex, get minimum amount of UXTOs, r, s, change output.
+//Get minimum amount of UXTOs, r, s, change output.
 function prepare(destination, amount, fee) {
     var uxtos = [];
     for (var i in data.addresses) {
@@ -92,19 +92,14 @@ function prepare(destination, amount, fee) {
     var version = Hex.littleEndian(Hex.pad("1", 8));
     tx = version + Hex.toHex(uxtos.length);
 
-    var r, s, signature, pubKey, script, sequence;
+    var signature, pubKey, script, sequence;
     for (var i in uxtos) {
         UXTOAmount = UXTOAmount.add(uxtos[i].amount);
         tx += Hex.littleEndian(uxtos[i].hash) + Hex.littleEndian(Hex.pad(uxtos[i].index, 8));
 
-        r = "";
-        s = "";
-        signature = "02" + Hex.toHex(r.length/2) + r + Hex.toHex(s.length/2) + s;
-        signature = "30" + Hex.toHex(signature.length/2) + signature + "01";
-
+        signature = secp256k1.sign(addresses[uxtos[i].address], uxtos[i].hash) + "01";
         pubKey = base58check.decode(uxtos[i].address);
-
-        script = (signature.length/2) + signature + "01" + Hex.toHex(pubKey.length/2) + pubKey;
+        script = (signature.length/2) + signature + Hex.toHex(pubKey.length/2) + pubKey;
 
         sequence = "ffffffff";
 

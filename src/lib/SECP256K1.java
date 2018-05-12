@@ -17,8 +17,15 @@ import org.bouncycastle.math.ec.ECCurve;
 
 import org.bouncycastle.math.ec.ECPoint;
 
+import org.bouncycastle.jce.spec.ECPrivateKeySpec;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
 import java.security.SecureRandom;
 import java.math.BigInteger;
+
+import java.security.KeyFactory;
+import java.security.PrivateKey;
+import java.security.Signature;
 
 public class SECP256K1 {
     private X9ECParameters curve;
@@ -32,6 +39,11 @@ public class SECP256K1 {
 
         generator = new ECKeyPairGenerator();
         generator.init(new ECKeyGenerationParameters(domain, new SecureRandom()));
+
+        src.lib.SHA sha = new src.lib.SHA();
+        //Below should print "304402201c3be71e1794621cbe3a7adec1af25f818f238f5796d47152137eba710f2174a02204f8fe667b696e30012ef4e56ac96afb830bddffee3b15d2e474066ab3aa39bad".
+        System.out.println(sign("03bf350d2821375158a608b51e3e898e507fe47f2d2e8c774de4a9a7edecf74eda", sha.sha256(sha.sha256("0100000001416e9b4555180aaa0c417067a46607bc58c96f0131b2f41f7d0fb665eab03a7e000000001976a91499b1ebcfc11a13df5161aba8160460fe1601d54188acffffffff01204e0000000000001976a914e81d742e2c3c7acd4c29de090fc2c4d4120b2bf888ac0000000001000000"))));
+        System.exit(0);
     }
 
     public String generateKeys() {
@@ -57,5 +69,23 @@ public class SECP256K1 {
     public String privateToPublic(String hexPrivKey) {
         ECPoint pubPoint = curve.getG().multiply(new BigInteger(hexPrivKey, 16));
         return "{\"x\":\"" + pubPoint.getX().toString() + "\",\"y\":\"" + pubPoint.getY().toString() + "\"}";
+    }
+
+    //Broken.
+    public String sign(String hexPrivKey, String hexData) {
+        try {
+            ECPrivateKeySpec privKeySpec = new ECPrivateKeySpec(new BigInteger(hexPrivKey, 16), params);
+            BouncyCastleProvider BCP = new BouncyCastleProvider();
+            KeyFactory keyFactory = KeyFactory.getInstance("ECDSA", BCP);
+            PrivateKey privKey = keyFactory.generatePrivate(privKeySpec);
+
+            Signature sig = Signature.getInstance("NONEwithECDSA", BCP);
+            sig.initSign(privKey);
+            sig.update(Hex.hexStrToByte(hexData));
+            return Hex.byteArrToHex(sig.sign());
+        } catch(Exception e) {
+            System.out.println(e);
+            return "false";
+        }
     }
 }

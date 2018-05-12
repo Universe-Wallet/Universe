@@ -3,6 +3,10 @@ package src.lib;
 import java.math.BigInteger;
 
 public class Hex {
+    public static String toHex(String decimal) {
+        return (new BigInteger(decimal)).toString(16).toLowerCase();
+    }
+
     public static boolean isHigher(String number, String bound, boolean numOrBound) { //False is number is supposed to be higer, True else
         if (bound.equals("0")) {
             return true;
