@@ -36,7 +36,6 @@ function start(onReady, onBroken) {
     });
 
     electrum.emitter.on("ready", function() {
-        print(getBalance());
         //Java had a problem with passing .call. I assume it's because .call uses `this` and that breaks the scope?
         onReady.call();
     });
@@ -79,7 +78,7 @@ function getBalance() {
 }
 
 var tx;
-//Hex.toHex, Base58.decode, get minimum amount of UXTOs, r, s, change output.
+//Hex.toHex, get minimum amount of UXTOs, r, s, change output.
 function prepare(destination, amount, fee) {
     var uxtos = [];
     for (var i in data.addresses) {
@@ -103,7 +102,7 @@ function prepare(destination, amount, fee) {
         signature = "02" + Hex.toHex(r.length/2) + r + Hex.toHex(s.length/2) + s;
         signature = "30" + Hex.toHex(signature.length/2) + signature + "01";
 
-        pubKey = Base58Check.decode(uxtos[i].address);
+        pubKey = base58check.decode(uxtos[i].address);
 
         script = (signature.length/2) + signature + "01" + Hex.toHex(pubKey.length/2) + pubKey;
 
@@ -133,7 +132,7 @@ function prepare(destination, amount, fee) {
     }
 
     var locktime = Hex.pad("", 8);
-    tx +== locktime;
+    tx += locktime;
 }
 
 function send() {

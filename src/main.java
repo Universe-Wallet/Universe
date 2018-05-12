@@ -27,7 +27,7 @@ import java.lang.Runnable;
 public class main {
     public static void main(String[] args) throws Exception { //throws Exception adds extra logging.
         ArrayList<Coin> coins = new ArrayList<Coin>(0);
-        String[] coinsToLoad = {"btc", "eth"};
+        String[] coinsToLoad = {"btc"};
 
         for (int i = 0; i < coinsToLoad.length; i++) {
             Coin coin;
