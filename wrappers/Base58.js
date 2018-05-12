@@ -1,6 +1,6 @@
 var Base58 = {
     new: function() {
-        var base58 = new (Java.type("src.lib.Base58"))();
+        var base58 = Java.type("src.lib.Base58");
 
         return {
             convert: function(hexNum) {

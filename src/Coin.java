@@ -41,7 +41,9 @@ public class Coin {
                     engine.eval(new FileReader("./modules/" + moduleName + ".js"));
 
                     invocable.invokeFunction("start", onReady, onBroken);
-                }catch(Exception e){}
+                }catch(Exception e){
+                    System.out.println(e);
+                }
             }
         })).start();
     }

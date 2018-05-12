@@ -5,6 +5,10 @@ var Base58Check = {
         return {
             encode: function(payload, version) {
                 return base58check.encode(payload, version);
+            },
+
+            decode: function(payload) {
+                return base58check.decode(payload);
             }
         };
     }
