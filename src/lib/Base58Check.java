@@ -27,7 +27,7 @@ public class Base58Check {
         byte[] checksum = Arrays.copyOfRange(doubleSha, 0, 4);
 
         String base58 = Base58.convert(hexVersion + hexPayload + Hex.byteArrToHex(checksum));
-        return "1" + base58;
+        return (hexVersion.equals("00") ? "1" : "") + base58;
     }
 
     public String decode(String base58Payload) {

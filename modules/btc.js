@@ -1,3 +1,5 @@
+load("wrappers/Hex.js");
+
 load("wrappers/secp256k1.js");
 load("wrappers/SHA.js");
 load("wrappers/RIPEMD.js");
@@ -11,18 +13,15 @@ var ripemd = RIPEMD.new();
 var base58check = Base58Check.new();
 
 var electrum, data;
+data = {
+    addresses: {
+        "mjQ8SPUsMitKiTZw7dVbSwFG89hSLB9Sde": "2418ff859dc5230e9ae1eab61650fa9c8d7ab525929e799a1aba7a4156a1b5c2",
+        "myS1YyNDQPzCTUx7JVDjxit62vzV7DYtqC": "8e1e48cc9713c2e2e16ca6fe2770ce4174aae0df52df8ac76d1eacf607d26c8a",
+        "mviLCLPMV59dcQyhf3HRE9tDvAxeG6WcmW": "a1106098a43f841dbe9ed1005baa55804e8d2b473ce6ca6f8aca069194a8da1a",
+        "mpVyy8u27xYnSs3UNjdvTcibiNiPCY8PHh": "fdef9dd388d89eec91159b2544380c4335aa8f1335b5425c7de216d63d14c5c7"
+    }
+};
 function start(onReady, onBroken) {
-    data = {
-        addresses: {
-            "1EErtzHciwu4vaKEZbm9LVtFwVvjiv6kuh|16bvUxuHqPq11W5kgfDGrnrVPcPK7Xeh7M": "",
-            "1L8dwzoxrAJY2LyvjLxSsVAMnJDNy1tMyW|16bvUxuHqPq11W5kgfDGrnrVPcPK7Xeh7M": "953146f4d6ea6cad68d496ccd923165ad287df0ec4272eae8e7ecda407b18e1a",
-            "13z9rdsxP52vBWbTqRirQqikGSwVH9AYFg|1J7FG6HYaJtxsAitqty71F5ABkzMsiek7o": "196e545ee2c9454184660e76a56dc570c68a338923385ed5cb1892c097b7163",
-            "1g1Wkpt7647yeuNejUGhLwcEDE7NZE2uf|16bvUxuHqPq11W5kgfDGrnrVPcPK7Xeh7M": "",
-            "17zNre27MmnwFBFQVkLAZtAeQnxccFwtFu|1H1G8dmDju23zEAtwf5UkJKkWSMvqP7rGJ": "5d70836b56178db9ff2482508d0502b85b48481f160cc57f5384d46a4c6f9a57",
-            "1LG1RzQwzC6R8kmKDPKPCCtWt8LZtskHY7|1BjHgTGM4wtL32rwwSseG4nRwufpoTYuQe": "25ee1f15cb31f3614d90e46685c7ef05f790f5758160150b3462c30027d86c86"
-        }
-    };
-
     electrum = Electrum.new({
         "btc.smsys.me": 995,
         "VPS.hsmiths.com": 50002,
@@ -46,7 +45,7 @@ function start(onReady, onBroken) {
 
 function generate() {
     function toAddress(pubKey) {
-        return base58check.encode(ripemd.ripemd160(sha.sha256(pubKey)), "00");
+        return base58check.encode(ripemd.ripemd160(sha.sha256(pubKey)), "6F");
     }
 
     var keys = secp256k1.generateKeys();
@@ -80,55 +79,97 @@ function getBalance() {
 var tx;
 //Get minimum amount of UXTOs, r, s, change output.
 function prepare(destination, amount, fee) {
-    var uxtos = [];
+    print("In prepare")
+    /*var uxtos = [];
     for (var i in data.addresses) {
         uxtos = uxtos.concat(electrum.getUXTOs(i.split("|")[0]));
         uxtos = uxtos.concat(electrum.getUXTOs(i.split("|")[1]));
-    }
+    }*/
+    var uxtos = [
+        {
+            address: "mjQ8SPUsMitKiTZw7dVbSwFG89hSLB9Sde",
+            hash: "71e4be87998bb1a8beced6bddb850a274004bcce97b5a18e0cac4e2338b333d3",
+            index: 0,
+            amount: BigDecimal.new("9000000.0").divide(BigDecimal.new("100000000").getBD())
+        }
+    ];
+
+    print("Created UXTOs")
 
     //Get minimum amount of UXTOs needed.
     var UXTOAmount = BigDecimal.new("0.0");
 
+    print("Created UXTO data")
+
     var version = Hex.littleEndian(Hex.pad("1", 8));
     tx = version + Hex.toHex(uxtos.length);
 
-    var signature, pubKey, script, sequence;
+    var RAndS, r, s, signature, pubKey, script, sequence;
     for (var i in uxtos) {
+        print("Handling " + i);
         UXTOAmount = UXTOAmount.add(uxtos[i].amount);
         tx += Hex.littleEndian(uxtos[i].hash) + Hex.littleEndian(Hex.pad(uxtos[i].index, 8));
 
-        signature = secp256k1.sign(addresses[uxtos[i].address], uxtos[i].hash) + "01";
+        RAndS = secp256k1.sign(data.addresses[uxtos[i].address], uxtos[i].hash).split("|");
+        r = RAndS[0];
+        if ((r.length % 2) === 1) {
+            r = "0" + r;
+        }
+        s = RAndS[1];
+        if ((s.length % 2) === 1) {
+            s = "0" + s;
+        }
+        print("Got r and s. " + r.length + " " + s.length);
+        signature = "02" + Hex.toHex(r.length) + r + "02" + Hex.toHex(s.length) + s;
+        signature = "30" + Hex.toHex(signature.length) + signature + "01";
+        print("Signature length: " + signature.length);
+        signature = Hex.toHex(signature.length) + signature;
         pubKey = base58check.decode(uxtos[i].address);
+        print(pubKey.length);
+        if ((pubKey.length % 2) === 1) {
+            pubKey = "0" + pubKey;
+        }
+        print("Decoded pubkey: " + pubKey);
         script = (signature.length/2) + signature + Hex.toHex(pubKey.length/2) + pubKey;
+        print("Script is done");
 
         sequence = "ffffffff";
 
         tx += Hex.toHex(script.length/2) + script + sequence;
     }
 
+    print("Handled UXTOs.");
+
     var outputs = [{
         destination: destination,
-        amount: amoount
+        amount: amount
     }];
 
     //Add change output.
 
     for (var i in outputs) {
-        amount = outputs[i].amount.multiply(100000000).toString();
-        if (value.indexOf(".") > -1) {
-            value = value.split(".")[0];
+        amount = outputs[i].amount.multiply(BigDecimal.new("100000000").getBD()).toString();
+        if (amount.indexOf(".") > -1) {
+            amount = amount.split(".")[0];
         }
-        value = Hex.littleEndian(Hex.pad(Hex.toHex(value), 16));
+        amount = Hex.littleEndian(Hex.pad(Hex.toHex(amount), 16));
 
-        script = Base58Check.decode(outputs[i]);
+        print("Handled output amount.")
+        script = base58check.decode(outputs[i].destination);
         script = "76a9" + Hex.toHex(script.length) + script + "88ac";
+        print("Handled script.")
 
-        tx += value + script;
+        tx += amount + script;
     }
+
+    print("Handled outputs.");
 
     var locktime = Hex.pad("", 8);
     tx += locktime;
+
+    print("\r\n\r\n" + tx);
 }
+print(prepare("2N8hwP1WmJrFF5QWABn38y63uYLhnJYJYTF", BigDecimal.new("0.5")));
 
 function send() {
 

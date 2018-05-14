@@ -251,7 +251,7 @@ var Electrum = {
                             address: address,
                             hash: tx.tx_hash,
                             index: tx.tx_pos,
-                            amount: BigDecimal.new(tx.value.toString() + ".0").divide("100000000")
+                            amount: BigDecimal.new(tx.value.toString() + ".0").divide(BigDecimal.new("100000000").getBD())
                         });
                     }
                 }

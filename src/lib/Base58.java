@@ -111,7 +111,6 @@ public class Base58 {
             digitValue = new BigInteger(Integer.toString(Characters.indexOf(value.substring(i, i+1))));
             digitMultiple = new BigInteger(base58.pow(digits).toString());
             total = total.add(digitValue.multiply(digitMultiple));
-            System.out.println(digits + " " + digitValue.multiply(digitMultiple).toString());
         }
 
         return total.toString(16);

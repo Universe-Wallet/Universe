@@ -13,7 +13,7 @@ var SECP256K1 = {
             },
 
             sign: function(privKey, data) {
-                return secp256k1.sign(privKey, data));
+                return secp256k1.sign(privKey, data);
             }
         };
     }

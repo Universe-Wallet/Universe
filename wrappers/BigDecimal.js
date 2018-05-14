@@ -25,6 +25,10 @@ var BigDecimal = {
 
             toString: function() {
                 return bd.toString();
+            },
+
+            getBD: function() {
+                return bd;
             }
         };
     }
