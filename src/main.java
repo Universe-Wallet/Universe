@@ -5,6 +5,7 @@ import src.lib.Hex;
 import src.lib.Random;
 import src.lib.SHA;
 import src.lib.SHA_3;
+import src.lib.Keccak;
 import src.lib.RIPEMD;
 import src.lib.Base58;
 import src.lib.Base58Check;
@@ -27,7 +28,7 @@ import java.lang.Runnable;
 public class main {
     public static void main(String[] args) throws Exception { //throws Exception adds extra logging.
         ArrayList<Coin> coins = new ArrayList<Coin>(0);
-        String[] coinsToLoad = {"btc"};
+        String[] coinsToLoad = {"eth"};
 
         for (int i = 0; i < coinsToLoad.length; i++) {
             Coin coin;

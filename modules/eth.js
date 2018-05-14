@@ -1,10 +1,10 @@
 load("wrappers/secp256k1.js");
-//load("wrappers/KECCAK.js");
+load("wrappers/Keccak.js");
 
 load("wrappers/HTTP.js");
 
 var secp256k1 = SECP256K1.new();
-//var keccak = KECCAK.new();
+var keccak = Keccak.new();
 
 var http = HTTP.new();
 
