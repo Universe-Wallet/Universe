@@ -89,7 +89,7 @@ function prepare(destination, amount, fee) {
         {
             address: "mjQ8SPUsMitKiTZw7dVbSwFG89hSLB9Sde",
             hash: "71e4be87998bb1a8beced6bddb850a274004bcce97b5a18e0cac4e2338b333d3",
-            index: 0,
+            index: "0",
             amount: BigDecimal.new("9000000.0").divide(BigDecimal.new("100000000").getBD())
         }
     ];
@@ -102,7 +102,7 @@ function prepare(destination, amount, fee) {
     print("Created UXTO data")
 
     var version = Hex.littleEndian(Hex.pad("1", 8));
-    tx = version + Hex.toHex(uxtos.length);
+    tx = version + Hex.pad(Hex.toHex(uxtos.length), 2);
 
     var RAndS, r, s, signature, pubKey, script, sequence;
     for (var i in uxtos) {
@@ -110,7 +110,7 @@ function prepare(destination, amount, fee) {
         UXTOAmount = UXTOAmount.add(uxtos[i].amount);
         tx += Hex.littleEndian(uxtos[i].hash) + Hex.littleEndian(Hex.pad(uxtos[i].index, 8));
 
-        RAndS = secp256k1.sign(data.addresses[uxtos[i].address], uxtos[i].hash).split("|");
+        RAndS = secp256k1.sign(data.addresses[uxtos[i].address], "6b3a64500ab59928a03ad6d33466443e6fa2e12c49e64a1c7f0070fcf1304e48").split("|");
         r = RAndS[0];
         if ((r.length % 2) === 1) {
             r = "0" + r;
@@ -119,18 +119,17 @@ function prepare(destination, amount, fee) {
         if ((s.length % 2) === 1) {
             s = "0" + s;
         }
-        print("Got r and s. " + r.length + " " + s.length);
+        print("Got r and s. " + r + " - " + s);
         signature = "02" + Hex.toHex(r.length) + r + "02" + Hex.toHex(s.length) + s;
         signature = "30" + Hex.toHex(signature.length) + signature + "01";
         print("Signature length: " + signature.length);
         signature = Hex.toHex(signature.length) + signature;
         pubKey = base58check.decode(uxtos[i].address);
-        print(pubKey.length);
         if ((pubKey.length % 2) === 1) {
             pubKey = "0" + pubKey;
         }
         print("Decoded pubkey: " + pubKey);
-        script = (signature.length/2) + signature + Hex.toHex(pubKey.length/2) + pubKey;
+        script = Hex.toHex(signature.length/2) + signature + Hex.toHex(pubKey.length/2) + pubKey;
         print("Script is done");
 
         sequence = "ffffffff";
@@ -147,6 +146,8 @@ function prepare(destination, amount, fee) {
 
     //Add change output.
 
+    tx += Hex.pad(Hex.toHex(outputs.length), 2);
+
     for (var i in outputs) {
         amount = outputs[i].amount.multiply(BigDecimal.new("100000000").getBD()).toString();
         if (amount.indexOf(".") > -1) {
@@ -154,12 +155,15 @@ function prepare(destination, amount, fee) {
         }
         amount = Hex.littleEndian(Hex.pad(Hex.toHex(amount), 16));
 
+        //Size of locking script.
+
         print("Handled output amount.")
         script = base58check.decode(outputs[i].destination);
-        script = "76a9" + Hex.toHex(script.length) + script + "88ac";
+        print("Decoded address: " + script);
+        script = "76a9" + Hex.toHex(script.length/2) + script + "88ac";
         print("Handled script.")
 
-        tx += amount + script;
+        tx += amount + Hex.toHex(script.length/2) + script;
     }
 
     print("Handled outputs.");
@@ -169,7 +173,7 @@ function prepare(destination, amount, fee) {
 
     print("\r\n\r\n" + tx);
 }
-print(prepare("2N8hwP1WmJrFF5QWABn38y63uYLhnJYJYTF", BigDecimal.new("0.5")));
+print(prepare("myS1YyNDQPzCTUx7JVDjxit62vzV7DYtq", BigDecimal.new("0.8")));
 
 function send() {
 
