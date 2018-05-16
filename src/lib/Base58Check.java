@@ -31,7 +31,7 @@ public class Base58Check {
     }
 
     public String decode(String base58Payload) {
-        String hexPayload = Base58.revert(base58Payload.substring(1, base58Payload.length()));
+        String hexPayload = Base58.revert(base58Payload);
         return hexPayload.substring(2, hexPayload.length()-8);
     }
 }
