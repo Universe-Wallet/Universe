@@ -113,6 +113,6 @@ public class Base58 {
             total = total.add(digitValue.multiply(digitMultiple));
         }
 
-        return total.toString(16);
+        return ((total.toString(16).length() % 2 == 1) ? "0" + total.toString(16) : total.toString(16));
     }
 }
