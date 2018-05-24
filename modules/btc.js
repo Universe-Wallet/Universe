@@ -12,6 +12,8 @@ var sha = SHA.new();
 var ripemd = RIPEMD.new();
 var base58check = Base58Check.new();
 
+print(sha.sha512("1234567890abcdef"));
+
 var electrum, data;
 data = {
     addresses: {
@@ -110,7 +112,7 @@ function prepare(destination, amount, fee) {
         UXTOAmount = UXTOAmount.add(uxtos[i].amount);
         tx += Hex.littleEndian(uxtos[i].hash) + Hex.littleEndian(Hex.pad(uxtos[i].index, 8));
 
-        RAndS = secp256k1.sign(data.addresses[uxtos[i].address], "6b3a64500ab59928a03ad6d33466443e6fa2e12c49e64a1c7f0070fcf1304e48").split("|");
+        RAndS = secp256k1.sign(data.addresses[uxtos[i].address], "bb57dc83429bcec713076ce8d55ff804103e2a7f93de4301256051f720ce6d37").split("|");
         r = RAndS[0];
         if ((r.length % 2) === 1) {
             r = "0" + r;

@@ -1,0 +1,10 @@
+{
+    "name": "Universe Wallet",
+    "start_url": "http://localhost:9888",
+    "description": "A Universal Wallet for Cryptocurrencies",
+    "icons": [{
+        "src": "https://universewallet.io/logo.png",
+        "sizes": "400x400",
+        "type": "image/png"
+    }]
+}

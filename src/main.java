@@ -21,7 +21,7 @@ import src.lib.LogWindow;
 import src.Coin;
 import java.util.ArrayList;
 
-import src.UI;
+import src.Server;
 import java.lang.Thread;
 import java.lang.Runnable;
 
@@ -45,7 +45,12 @@ public class main {
 
         (new Thread(new Runnable(){
             public void run() {
-                UI ui = new UI();
+                try {
+                    Server server = new Server();
+                } catch(Exception e) {
+                    System.out.println(e);
+                    System.exit(-1);
+                }
             }
         })).start();
         return;
